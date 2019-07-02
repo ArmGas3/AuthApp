@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const verifyToken = require('./verifytoken');
-const jwt = require('jsonwebtoken');
 
 const UserLoginModel = require('.././model/db').UserLoginModel;
 
@@ -22,21 +20,6 @@ router.get('/login', (req, res) => {
     }
 });
 
-router.post('/posts', verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secret_key', (err, payload) => {
-
-        console.log('Req token:', req.token);
-        if (err) throw err;
-        else {
-            res.json({
-                msg: 'Post created',
-                payload
-            });
-        }
-
-    });
-});
-
 router.post('/login', (req, res) => {
 
     let {login, pass} = req.body;
@@ -46,16 +29,7 @@ router.post('/login', (req, res) => {
         if (data[0].login === login && data[0].pass === pass) {
             req.session.loggedIn = true;
             req.session.user = data[0];
-            let user = data[0];
-            jwt.sign({user}, 'secret_key', ((err, token) => {
-                if (err) throw err;
-
-                console.log(token);
-
-                res.render('login', {user: data[0].login});
-
-            }));
-
+            res.render('login', {user: data[0].login});
         } else {
             res.redirect('/error');
         }
