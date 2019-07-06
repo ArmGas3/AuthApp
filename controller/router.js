@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-const UserLoginModel = require('.././model/db').UserLoginModel;
+const UserLoginModel = require('../db');
+
+let Model = new UserLoginModel('mongodb://localhost:27017/Users');
+let model = Model.getModel();
 
 router.get('/', (req, res) => {
 
@@ -24,7 +27,7 @@ router.post('/login', (req, res) => {
 
     let {login, pass} = req.body;
 
-    UserLoginModel.find({login, pass}).then(data => {
+    model.find({login, pass}).then(data => {
 
         if (data[0].login === login && data[0].pass === pass) {
             req.session.loggedIn = true;
@@ -38,7 +41,7 @@ router.post('/login', (req, res) => {
 
 router.post('/register', (req, res) => {
 
-    let user = new UserLoginModel({login: req.body.login, pass: req.body.pass});
+    let user = new model({login: req.body.login, pass: req.body.pass});
 
     user.save().then(() => {
         res.render('home', {msg: 'success'});
@@ -46,7 +49,7 @@ router.post('/register', (req, res) => {
 });
 
 router.get('/index', (req, res) => {
-    UserLoginModel.find({}).then(data => res.send(data));
+    model.find({}).then(data => res.send(data));
 });
 
 router.get('/error', (req, res) => {
