@@ -1,51 +1,72 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('./auth');
+const bcrypt = require('bcrypt');
 
-const UserLoginModel = require('../db');
+const UserLoginModel = require('.././model/db');
 
 let Model = new UserLoginModel('mongodb://localhost:27017/Users');
 let model = Model.getModel();
 
 router.get('/', (req, res) => {
-
-    if (req.session.loggedIn === true) {
-        console.log('The user is logged in');
-    }
     res.render('home');
 });
 
-router.get('/login', (req, res) => {
-
-    if (req.session.loggedIn === true) {
-        res.render('login', {user: req.session.user.login});
-    } else {
+router.post('/logout', (req, res) => {
+    req.session.destroy(err => {
         res.redirect('/');
-    }
+    });
+});
+
+router.get('/login', auth, (req, res) => {
+    res.render('login', {user: req.session.user.login});
 });
 
 router.post('/login', (req, res) => {
-
     let {login, pass} = req.body;
 
-    model.find({login, pass}).then(data => {
+    if (login && pass) {
 
-        if (data[0].login === login && data[0].pass === pass) {
-            req.session.loggedIn = true;
-            req.session.user = data[0];
-            res.render('login', {user: data[0].login});
-        } else {
-            res.redirect('/error');
-        }
-    });
+        model.findOne({login}).then(data => {
+            if (!data) {
+                res.redirect('/');
+            }
+
+            bcrypt.compare(pass, data.pass)
+                .then((user) => {
+                    if (user) {
+                        req.session.user = {login: data.login, pass};
+                        req.session.loggedIn = true;
+                        return res.redirect('/login');
+                    } else {
+                        res.redirect('/');
+                    }
+                })
+                .catch(err => {
+                    res.redirect('/');
+                });
+        })
+
+            .catch((err) => {
+                res.redirect('/error');
+            });
+    } else {
+        res.render('home');
+    }
 });
 
 router.post('/register', (req, res) => {
 
-    let user = new model({login: req.body.login, pass: req.body.pass});
+    let {login, pass} = req.body;
 
-    user.save().then(() => {
-        res.render('home', {msg: 'success'});
-    });
+    bcrypt.hash(pass, 12)
+        .then(hash => {
+            let user = new model({login, pass: hash});
+
+            user.save().then(() => {
+                res.render('home', {msg: 'success'});
+            });
+        });
 });
 
 router.get('/index', (req, res) => {
@@ -54,6 +75,10 @@ router.get('/index', (req, res) => {
 
 router.get('/error', (req, res) => {
     res.render('error');
+});
+
+router.get('/rm', (req, res) => {
+    model.remove({}).then(data => res.send(data));
 });
 
 module.exports = router;

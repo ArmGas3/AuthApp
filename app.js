@@ -3,6 +3,9 @@ const bps = require('body-parser');
 const session = require('express-session');
 const MongoDbStore = require('connect-mongodb-session')(session);
 const router = require('./controller/router');
+const csrf = require('csurf');
+
+const csrfProtection = csrf();
 
 const store = new MongoDbStore({
     uri: 'mongodb://localhost:27017/Users',
@@ -17,6 +20,7 @@ app.use('/', bps.json());
 app.use('/', bps.urlencoded({extended: false}));
 app.use('/', express.static('/views'));
 app.use(session({secret: 'secret', resave: false, saveUninitialized: false, store}));
+// app.use(csrfProtection);
 app.use('/', router);
 
 app.listen(3000, () => {
