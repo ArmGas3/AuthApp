@@ -4,14 +4,11 @@ const session = require('express-session');
 const MongoDbStore = require('connect-mongodb-session')(session);
 const router = require('./controller/router');
 const csrf = require('csurf');
-
 const csrfProtection = csrf();
-
 const store = new MongoDbStore({
     uri: 'mongodb://localhost:27017/Users',
     collection: 'sessions'
 });
-
 const app = express();
 
 app.set('view engine', 'ejs');

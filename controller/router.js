@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const auth = require('./auth');
 const bcrypt = require('bcrypt');
+const nodemail = require('nodemailer');
+const sendgrid = require('nodemailer-sendgrid-transport');
+
+const transporter = nodemail.createTransport(sendgrid({
+    auth: {
+        api_key: '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'
+    }
+}));
 
 const UserLoginModel = require('.././model/db');
 
@@ -57,13 +65,23 @@ router.post('/login', (req, res) => {
 
 router.post('/register', (req, res) => {
 
-    let {login, pass} = req.body;
+    let {login, pass, email} = req.body;
 
     bcrypt.hash(pass, 12)
         .then(hash => {
-            let user = new model({login, pass: hash});
+            let user = new model({login, pass: hash, email});
 
             user.save().then(() => {
+                transporter.sendMail({
+                    to: email,
+                    from: 'app@node.com',
+                    subject: 'Sign up succeeded',
+                    html: '<h1>Thank you for registration</h1>'
+                })
+
+                    .catch(err => {
+                        console.log(err);
+                    });
                 res.render('home', {msg: 'success'});
             });
         });
