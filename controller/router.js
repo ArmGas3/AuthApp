@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('./auth');
+const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const nodemail = require('nodemailer');
 const sendgrid = require('nodemailer-sendgrid-transport');
@@ -71,13 +72,14 @@ router.post('/register', (req, res) => {
         .then(hash => {
             let user = new model({login, pass: hash, email});
 
-            user.save().then(() => {
-                transporter.sendMail({
-                    to: email,
-                    from: 'app@node.com',
-                    subject: 'Sign up succeeded',
-                    html: '<h1>Thank you for registration</h1>'
-                })
+            user.save()
+                .then(() => {
+                    transporter.sendMail({
+                        to: email,
+                        from: 'app@node.com',
+                        subject: 'Sign up succeeded',
+                        html: '<h1>Thank you for registration</h1>'
+                    })
 
                     .catch(err => {
                         console.log(err);
@@ -97,6 +99,12 @@ router.get('/error', (req, res) => {
 
 router.get('/rm', (req, res) => {
     model.remove({}).then(data => res.send(data));
+});
+
+router.get('/cr', (req, res) => {
+    crypto.randomBytes(32, (err, buffer) => {
+        res.send(buffer.toString('hex'));
+    });
 });
 
 module.exports = router;
