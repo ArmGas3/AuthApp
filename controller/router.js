@@ -14,31 +14,45 @@ const transporter = nodemail.createTransport(sendgrid({
 
 const UserLoginModel = require('.././model/db');
 
-let Model = new UserLoginModel('mongodb://localhost:27017/Users');
-let model = Model.getModel();
+const Model = new UserLoginModel('mongodb://localhost:27017/Users');
+const model = Model.getModel();
+const postModel = Model.getPostModel();
 
 router.get('/', (req, res) => {
     res.render('home');
 });
 
+router.get('/signin', (req, res) => {
+    res.render('signin');
+});
+
+router.get('/signup', (req, res) => {
+    res.render('signup');
+});
+
 router.post('/logout', (req, res) => {
     req.session.destroy(err => {
+        if (err) console.log(err);
         res.redirect('/');
     });
 });
 
-router.get('/login', auth, (req, res) => {
-    res.render('login', {user: req.session.user.login});
+router.get('/profile', auth, (req, res) => {
+    postModel.find({})
+        .then(data => {
+            return res.render('login', {user: req.session.user.login, posts: data});
+        });
+
 });
 
-router.post('/login', (req, res) => {
+router.post('/profile', (req, res) => {
     let {login, pass} = req.body;
 
     if (login && pass) {
 
         model.findOne({login}).then(data => {
             if (!data) {
-                res.redirect('/');
+                return res.redirect('/error');
             }
 
             bcrypt.compare(pass, data.pass)
@@ -46,7 +60,7 @@ router.post('/login', (req, res) => {
                     if (user) {
                         req.session.user = {login: data.login, pass};
                         req.session.loggedIn = true;
-                        return res.redirect('/login');
+                        return res.redirect('/profile');
                     } else {
                         res.redirect('/');
                     }
@@ -73,7 +87,7 @@ router.post('/register', (req, res) => {
             let user = new model({login, pass: hash, email});
 
             user.save()
-                .then(() => {
+                .then((data) => {
                     transporter.sendMail({
                         to: email,
                         from: 'app@node.com',
@@ -84,9 +98,13 @@ router.post('/register', (req, res) => {
                     .catch(err => {
                         console.log(err);
                     });
-                res.render('home', {msg: 'success'});
+                    res.redirect('/');
             });
         });
+});
+
+router.get('/getPosts', (req, res) => {
+    postModel.find({}).then(data => res.send(data));
 });
 
 router.get('/index', (req, res) => {
@@ -102,9 +120,26 @@ router.get('/rm', (req, res) => {
 });
 
 router.get('/cr', (req, res) => {
-    crypto.randomBytes(32, (err, buffer) => {
+    crypto.randomBytes(64, (err, buffer) => {
         res.send(buffer.toString('hex'));
     });
+});
+
+router.get('/post', auth, (req, res) => {
+    res.render('post');
+});
+
+router.post('/posts', auth, (req, res) => {
+    let {title, body} = req.body;
+
+    let post = new postModel({title, body});
+
+    post.save()
+        .then((data) => {
+            return res.redirect('/profile')
+        })
+
+        .catch(err => console.log(err.message));
 });
 
 module.exports = router;

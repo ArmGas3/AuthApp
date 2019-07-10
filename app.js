@@ -14,7 +14,15 @@ app.set('view engine', 'ejs');
 app.use('/', bps.json());
 app.use('/', bps.urlencoded({extended: false}));
 app.use('/', express.static('/views'));
-app.use(session({secret: 'secret', resave: false, saveUninitialized: false, store, cookie: {maxAge: 10000}}));
+app.use(session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false,
+    store,
+    cookie: {
+        maxAge: 30000
+    }
+}));
 app.use('/', router);
 
 app.listen(3000, () => {
