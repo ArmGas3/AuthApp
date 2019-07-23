@@ -10,17 +10,16 @@ const store = new MongoDbStore({
 const app = express();
 
 app.set('view engine', 'ejs');
-
 app.use('/', bps.json());
 app.use('/', bps.urlencoded({extended: false}));
-app.use('/', express.static('/views'));
+app.use('/', express.static(__dirname + '/views/public'));
 app.use(session({
     secret: 'secret',
     resave: false,
     saveUninitialized: false,
     store,
     cookie: {
-        maxAge: 30000
+        maxAge: 600000
     }
 }));
 app.use('/', router);

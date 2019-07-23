@@ -40,7 +40,8 @@ router.post('/logout', (req, res) => {
 router.get('/profile', auth, (req, res) => {
     postModel.find({})
         .then(data => {
-            return res.render('login', {user: req.session.user.login, posts: data});
+            let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return res.render('login', {user: req.session.user.login, posts: data, months});
         });
 
 });
@@ -97,9 +98,10 @@ router.post('/register', (req, res) => {
 
                     .catch(err => {
                         console.log(err);
+                        res.redirect('/signup');
                     });
                     res.redirect('/');
-            });
+                });
         });
 });
 
@@ -117,6 +119,10 @@ router.get('/error', (req, res) => {
 
 router.get('/rm', (req, res) => {
     model.remove({}).then(data => res.send(data));
+});
+
+router.get('/rmposts', (req, res) => {
+    postModel.remove({}).then(data => res.send(data));
 });
 
 router.get('/cr', (req, res) => {
@@ -141,5 +147,9 @@ router.post('/posts', auth, (req, res) => {
 
         .catch(err => console.log(err.message));
 });
+
+let date = new Date();
+
+date.getDay()
 
 module.exports = router;

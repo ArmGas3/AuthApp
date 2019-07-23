@@ -1,0 +1,21 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: burlywood;
+}
+
+header {
+    padding: 15px;
+    background-color: #323232;
+}
+
+a {
+    text-underline: none;
+}
+
+nav div ul {
+    display: flex;
+}

@@ -8,11 +8,13 @@ class Database {
         this.UserLoginSchema = new this.Schema({
             login: {
                 type: String,
-                required: true
+                required: true,
+                unique: true
             },
             pass: {
                 type: String,
-                required: true
+                required: true,
+                unique: true
             },
             email: {
                 type: String,
@@ -28,6 +30,10 @@ class Database {
             body: {
                 type: String,
                 required: true
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now()
             }
         });
 

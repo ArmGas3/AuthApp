@@ -20,8 +20,20 @@
 <a href="/post">Create a new post</a>
 
 <div>
-    <%= posts %>
+    <ul>
+        <% posts.forEach(post => { %>
+            <li>
+                <div>
+                    <%= post.title %><br/>
+                    <%= post.body %><br/>
+                    <%= post.createdAt.getDay() %>
+                    <% let mo = post.createdAt.getMonth() %>
+                    <%= months[mo] %>
+                    <%= post.createdAt.getFullYear() %>
+                </div>
+            </li>
+        <% }) %>
+    </ul>
 </div>
-
 </body>
 </html>
